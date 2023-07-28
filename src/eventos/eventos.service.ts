@@ -47,15 +47,22 @@ export class EventosService {
   }
 
   async update(id: number, updateEventoDto: UpdateEventoDto) {
-    return await this.eventoRepository.update(id, updateEventoDto);
+    try {
+      const response = await this.eventoRepository.update(id, updateEventoDto);
+      return response.affected === 0
+        ? new HttpException('Evento no encontrado', 404)
+        : updateEventoDto;
+    } catch (error) {
+      return new HttpException(
+        'Error al actualizar evento : ' + error.message,
+        404,
+      );
+    }
   }
 
   async remove(id: number) {
     try {
       const buscado = await this.findOne(id);
-      if (!buscado) {
-        return new HttpException('Evento no encontrado', 404);
-      }
       await this.eventoRepository.delete({ id });
       return buscado;
     } catch (error) {
